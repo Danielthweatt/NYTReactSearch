@@ -5,9 +5,9 @@ const Nav = () => (
 		<a className="navbar-brand" href="/home">
       NYT React Search
 		</a>
-		<ul class="navbar-nav">
-			<li class="nav-item">
-				<a class="nav-link" href="/saved">Saved Articles</a>
+		<ul className="navbar-nav">
+			<li className="nav-item">
+				<a className="nav-link" href="/saved">Saved Articles</a>
 			</li>
 		</ul>
 	</nav>
