@@ -10,14 +10,18 @@ const articleSchema = new Schema({
 		type: String,
 		required: true
 	},
-	date: { 
-		type: Date,
+	datePublished: { 
+		type: String,
 		required: true
 	},
 	url: {
 		type: String,
 		required: true,
 		unique: true
+	},
+	dateCreated: {
+		type: Date,
+		default: Date.now
 	}
 });
 

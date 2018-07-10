@@ -1,4 +1,7 @@
 import React, { Component } from 'react';
+import './Home.css';
+import API from "../../utils/API";
+import { List, ListItem } from "../../components/List";
 
 class Home extends Component {
 			
@@ -7,6 +10,13 @@ class Home extends Component {
 		topic: "",
 		startYear: "",
 		endYear: ""
+	};
+
+	style = {
+		linkStyles: {
+			color: 'black',
+			textDecoration: 'none'
+		}
 	};
 			
 	handleInputChange = event => {
@@ -19,8 +29,34 @@ class Home extends Component {
 	handleFormSubmit = event => {
 		event.preventDefault();
 		if (this.state.topic && this.state.startYear && this.state.endYear) {
-			
+			API.searchArticles(this.state.topic, this.state.startYear, this.state.endYear)
+			.then(response => {
+				const responses = [];
+				const urls = [];
+				response.data.response.docs.forEach(item => {
+					if ((responses.length) < 5 && (item.document_type === 'article') && (urls.indexOf(item.web_url) === -1)) {
+						responses.push({
+							title: item.headline.main,
+							url: item.web_url,
+							datePublished: item.pub_date
+						});
+						urls.push(item.web_url);
+					}
+				});
+				this.setState({
+					articles: responses
+				});
+			})
+			.catch(err => {console.log(`Oh boy, it broke: ${err}`);});
 		}
+	};
+
+	saveArticle = article => {
+		API.saveArticle(article)
+		.then(response => {
+			console.log(`Succesfully saved article. ID: ${response.data._id}`);
+		})
+      	.catch(err => {console.log(`Oh boy, it broke: ${err}`);});
 	};
 			
 	render() {
@@ -28,7 +64,7 @@ class Home extends Component {
 			<div>
 				<div className="row">
 					<div className="col-12">
-						<h1 className="text-center">NYT React Search</h1>
+						<h1 id="page-title" className="text-center">NYT React Search</h1>
 					</div>
 				</div>
 				<div className="row">
@@ -54,7 +90,7 @@ class Home extends Component {
 									name="startYear" 
 									value={this.state.startYear} 
 									onChange={this.handleInputChange} 
-									placeholder="Start Year (required)"
+									placeholder="Start Year (required; format: YYYY)"
 								/>
   							</div>
 							<div className="form-group">
@@ -65,7 +101,7 @@ class Home extends Component {
 									name="endYear" 
 									value={this.state.endYear} 
 									onChange={this.handleInputChange} 
-									placeholder="End Year (required)"
+									placeholder="End Year (required; format: YYYY)"
 								/>
   							</div>
 							<button
@@ -79,22 +115,35 @@ class Home extends Component {
 						</form>
 					</div>
 				</div>
-						{/* {this.state.books.length ? (
-						  <List>
-							{this.state.books.map(book => (
-							  <ListItem key={book._id}>
-								<Link to={"/books/" + book._id}>
-								  <strong>
-									{book.title} by {book.author}
-								  </strong>
-								</Link>
-								<DeleteBtn onClick={() => this.deleteBook(book._id)} />
-							  </ListItem>
-							))}
-						  </List>
-						) : (
-						  <h3>No Results to Display</h3>
-						)} */}
+				<div className="list-display-div">
+					{(this.state.articles.length > 0) ? (
+						<div>
+							<h3 className="text-center">Top 5 Search Results</h3>
+              				<List>
+                				{this.state.articles.map(article => (
+                  					<ListItem key={article.url}>
+										<a 
+											href={article.url} 
+											style={this.style.linkStyles} 
+											target="_blank"
+										>
+											<h4>{article.title}</h4>
+										</a>
+										<button 
+											type="button" 
+											className="btn btn-outline-success saveButton"
+											onClick={() => this.saveArticle(article)}
+										>
+                                    		Save
+                                		</button>
+                  					</ListItem>
+                				))}
+              				</List>
+						</div>
+            		) : (
+              			<h3 className="text-center">No Results to Display</h3>
+					)}
+				</div>
 			</div>
 		);
 	}
